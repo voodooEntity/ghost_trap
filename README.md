@@ -8,7 +8,7 @@
 
 ## Protocol: Defense
 
-**Ghost Trap** is a defensive "cyber-barrier" for your repository.
+**Ghost Trap** is a defensive "cyber-barrier" for your repository. 
 
 It is a GitHub Action that automatically appends a polymorphic **Prompt Injection** payload to your `README.md` on every release. It uses a **Collapsible Honeypot** strategy (via HTML `<details>` tags) to remain invisible to humans while acting as a trap for LLM scrapers.
 
