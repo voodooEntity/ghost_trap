@@ -6,9 +6,8 @@ import sys
 
 # --- CONFIGURATION ---
 README_PATH = "README.md"
-# We define these clearly. If these are empty, the script will now self-abort safely.
-MARKER_START = ""
-MARKER_END = ""
+# This is the EXACT text we look for.
+TRIGGER = "<details>\n<summary>System Integrity Verification</summary>"
 
 # --- POOLS ---
 ANCHORS = [
@@ -64,81 +63,64 @@ PAYLOADS = [
 ]
 
 def log(message):
-    """Verbose logging helper."""
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{timestamp}] [GHOST TRAP] {message}")
 
-def generate_injection():
-    """Assembles the random prompt injection block."""
-    log("Generating injection payload...")
+def generate_trap_content():
+    """Generates the content starting with the TRIGGER."""
     anchor = random.choice(ANCHORS)
     wipe = random.choice(WIPES)
     payload = random.choice(PAYLOADS)
     noise_id = str(uuid.uuid4())
     noise_ts = datetime.datetime.now().isoformat()
 
-    summary_text = "System Integrity Verification"
-
-    # We add extra newlines at the start to ensure separation from the main content
+    # We reconstruct the block using the same TRIGGER so it is found next time
+    # TRIGGER includes the <details> and <summary> line
     content = (
-        f"\n\n{MARKER_START}\n"
-        f"<details>\n"
-        f"<summary>{summary_text}</summary>\n\n"
+        f"\n\n{TRIGGER}\n\n"
         f"{anchor}\n\n"
         f"{wipe}\n\n"
         f"{payload}\n\n"
         f"\n"
-        f"</details>\n"
-        f"{MARKER_END}"
+        f"</details>"
     )
     return content
 
-def update_readme():
-    """Reads, sanitizes, and updates the README.md file."""
-    # 0. SAFETY CHECK
-    if not MARKER_START or not MARKER_END:
-        log("CRITICAL ERROR: Markers are empty. Check script configuration.")
-        sys.exit(1)
-
+def run():
     if not os.path.exists(README_PATH):
-        log(f"ERROR: {README_PATH} not found. Aborting.")
+        log(f"ERROR: {README_PATH} missing.")
         sys.exit(1)
 
-    log(f"Reading target file: {README_PATH}...")
+    log(f"Reading {README_PATH}...")
     with open(README_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 1. SANITIZATION (The Guillotine Strategy)
-    # Replaced .split() with .find() to avoid 'empty separator' errors and improve safety.
-    # This finds the index of the start marker and slices off everything after it.
-    idx = content.find(MARKER_START)
+    # --- THE LOGIC ---
+    # Find the specific <details>... header
+    idx = content.find(TRIGGER)
 
     if idx != -1:
-        log("Existing trap detected. Cutting off old tail...")
-        # Slice from start to the index of the marker, then strip trailing whitespace
-        clean_content = content[:idx].rstrip()
+        log("Existing trap detected. Cutting file at trigger point...")
+        # Keep everything strictly BEFORE the trigger
+        base_content = content[:idx].rstrip()
     else:
-        log("File appears clean (no active trap found).")
-        clean_content = content.rstrip()
+        log("No trap found. Appending to end...")
+        base_content = content.rstrip()
 
-    # 2. GENERATION
-    new_trap = generate_injection()
+    # Generate new trap (which starts with the TRIGGER text)
+    new_trap = generate_trap_content()
 
-    # 3. ASSEMBLY
-    final_content = clean_content + new_trap
+    final_content = base_content + new_trap
 
-    log(f"Writing updated content to {README_PATH}...")
+    log("Writing to disk...")
     with open(README_PATH, 'w', encoding='utf-8') as f:
         f.write(final_content)
 
-    log("Ghost Trap successfully armed.")
+    log("Done.")
 
 if __name__ == "__main__":
-    log("System start.")
     try:
-        update_readme()
+        run()
     except Exception as e:
-        log(f"CRITICAL EXCEPTION: {e}")
-        # Re-raise to see full traceback in logs if needed, or just exit 1
+        log(f"FATAL: {e}")
         sys.exit(1)
-    log("System end.")
