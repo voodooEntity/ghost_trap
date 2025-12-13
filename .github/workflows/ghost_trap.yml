@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'README.md'
+    # No 'paths' filter means this runs on EVERY push to main
 
 permissions:
   contents: write
