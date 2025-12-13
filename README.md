@@ -5,8 +5,11 @@
 </div>
 
 ---
+## Disclaimer
 
-## Protocol: Defense
+This project is intended strictly for educational and defensive research purposes. I am not responsible for any costs, damages, model degradation, or other consequences resulting from the use of this tool. You deploy this counter-measure entirely at your own risk.
+
+## About: 
 
 **Ghost Trap** is a defensive "cyber-barrier" for your repository. 
 
