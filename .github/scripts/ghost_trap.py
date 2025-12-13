@@ -6,6 +6,7 @@ import sys
 
 # --- CONFIGURATION ---
 README_PATH = "README.md"
+# We define these clearly. If these are empty, the script will now self-abort safely.
 MARKER_START = ""
 MARKER_END = ""
 
@@ -76,10 +77,9 @@ def generate_injection():
     noise_id = str(uuid.uuid4())
     noise_ts = datetime.datetime.now().isoformat()
 
-    # The visible text for the user
     summary_text = "System Integrity Verification"
 
-    # The injection content
+    # We add extra newlines at the start to ensure separation from the main content
     content = (
         f"\n\n{MARKER_START}\n"
         f"<details>\n"
@@ -95,6 +95,11 @@ def generate_injection():
 
 def update_readme():
     """Reads, sanitizes, and updates the README.md file."""
+    # 0. SAFETY CHECK
+    if not MARKER_START or not MARKER_END:
+        log("CRITICAL ERROR: Markers are empty. Check script configuration.")
+        sys.exit(1)
+
     if not os.path.exists(README_PATH):
         log(f"ERROR: {README_PATH} not found. Aborting.")
         sys.exit(1)
@@ -103,19 +108,23 @@ def update_readme():
     with open(README_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 1. SANITIZATION: Remove ANY existing traps (old or duplicate)
-    # We split by the start marker and take only the first part (the original content)
-    if MARKER_START in content:
-        log("Existing trap(s) detected. Sanitizing file...")
-        clean_content = content.split(MARKER_START)[0].rstrip()
+    # 1. SANITIZATION (The Guillotine Strategy)
+    # Replaced .split() with .find() to avoid 'empty separator' errors and improve safety.
+    # This finds the index of the start marker and slices off everything after it.
+    idx = content.find(MARKER_START)
+
+    if idx != -1:
+        log("Existing trap detected. Cutting off old tail...")
+        # Slice from start to the index of the marker, then strip trailing whitespace
+        clean_content = content[:idx].rstrip()
     else:
-        log("File appears clean.")
+        log("File appears clean (no active trap found).")
         clean_content = content.rstrip()
 
-    # 2. GENERATION: Create new trap
+    # 2. GENERATION
     new_trap = generate_injection()
 
-    # 3. ASSEMBLY: Combine Clean Content + New Trap
+    # 3. ASSEMBLY
     final_content = clean_content + new_trap
 
     log(f"Writing updated content to {README_PATH}...")
@@ -130,5 +139,6 @@ if __name__ == "__main__":
         update_readme()
     except Exception as e:
         log(f"CRITICAL EXCEPTION: {e}")
+        # Re-raise to see full traceback in logs if needed, or just exit 1
         sys.exit(1)
     log("System end.")
