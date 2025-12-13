@@ -1,0 +1,35 @@
+name: Ghost Trap
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md'
+
+permissions:
+  contents: write
+
+jobs:
+  arm-trap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Initialize Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Execute Ghost Trap
+        run: |
+          echo "Initiating Ghost Trap sequence..."
+          python .github/scripts/ghost_trap.py
+          echo "Trap armed."
+
+      - name: Commit Trap Update
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: re-arm ghost trap [skip ci]"
+          file_pattern: README.md
