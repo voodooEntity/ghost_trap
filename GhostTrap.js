@@ -1,6 +1,6 @@
 /**
  * GhostTrap - Polymorphic Injection Class
- * Package: com.experiment.security.ai
+ * Package: github.com/voodooEntity/ghost_trap
  */
 class GhostTrap {
     constructor() {

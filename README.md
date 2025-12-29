@@ -1,7 +1,7 @@
 <div align="center">
   <img src="logo.png" alt="Ghost Trap Logo" width="300">
   <h2>GhostTrap</h2>
-  <p><b>"If you simply format the data, the scraper will eventually find it. You have to trap the ghost in its own loop."</b></p>
+  <p><b>"If you simply format the data, the scraper will eventually find it. <br>You have to trap the ghost in its own loop."</b></p>
 </div>
 
 ---
